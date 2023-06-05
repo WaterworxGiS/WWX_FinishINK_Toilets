@@ -1,0 +1,957 @@
+---
+title: FinishINK WWX 
+output: 
+  flexdashboard::flex_dashboard:
+    orientation: column
+    vertical_layout: fill
+    theme: flatly
+    #runtime: shiny
+---
+
+
+```{r setup, include=FALSE}
+library(flexdashboard)
+library(highcharter)
+library(tidyverse)
+library(maps)
+library(htmlwidgets)
+library(leaflet)
+library(lubridate)
+library(echarts4r)
+library(dplyr)
+library(DT)
+library(mapview)
+library(sf)
+library(sp)
+library(janitor)
+library(scales)
+library(gtsummary)
+library(tmap)
+```
+
+
+# {General Number of Systems & Doors}
+```{r}
+  
+```
+
+
+```{r read}
+
+Data <- read_csv("E:/Nakuru WaterWax/Vei project/PostgressSQL Database/Sanitation/Constructed and Improved Toilets under Partnaship/Combined Files/Data.csv")
+
+County_shp<- read_sf ("E:/Nakuru WaterWax/Vei project/PostgressSQL Database/Water Infrastructure/Administrative Boundary/Nakuru County Boundary.shp")
+
+SubCounties_shp <-read_sf("E:/Nakuru WaterWax/Vei project/PostgressSQL Database/Sanitation/Constructed and Improved Toilets under Partnaship/Boundaries/Sub_Counties.shp")
+
+Interested_SubCounties <- read_sf ("E:/Nakuru WaterWax/Vei project/PostgressSQL Database/Sanitation/Constructed and Improved Toilets under Partnaship/Boundaries/Interested.shp")
+
+Toilets2021<- read_sf ("E:/Nakuru WaterWax/Vei project/PostgressSQL Database/Sanitation/Constructed and Improved Toilets under Partnaship/Boundaries/Toilets/Data2021.shp")
+
+Toilets2022<- read_sf ("E:/Nakuru WaterWax/Vei project/PostgressSQL Database/Sanitation/Constructed and Improved Toilets under Partnaship/Boundaries/Toilets/Data2022.shp")
+
+Toilets2023<- read_sf ("E:/Nakuru WaterWax/Vei project/PostgressSQL Database/Sanitation/Constructed and Improved Toilets under Partnaship/Boundaries/Toilets/Data2023.shp")
+
+WWX_Previous_Toilets<- read_sf ("E:/Nakuru WaterWax/Vei project/PostgressSQL Database/Sanitation/Constructed and Improved Toilets under Partnaship/Boundaries/Toilets/1K_WWX_Toilets.shp")
+ 
+NCSP_Toilets<- read_sf ("E:/Nakuru WaterWax/Vei project/PostgressSQL Database/Sanitation/Constructed and Improved Toilets under Partnaship/Boundaries/Toilets/NCSP_Toilets.shp")
+
+Datashp<- read_sf ("E:/Nakuru WaterWax/Vei project/PostgressSQL Database/Sanitation/Constructed and Improved Toilets under Partnaship/Boundaries/Toilets/Datashp.shp")
+
+Nawasscoshp<- read_sf ("E:/Nakuru WaterWax/Vei project/PostgressSQL Database/Sanitation/Constructed and Improved Toilets under Partnaship/Boundaries/Toilets/Nawasscoshp.shp")
+
+
+
+```
+
+Row {data-width=500}
+-----------------------------------------------------------------------
+
+### Number of systems Per Sub-County
+
+```{r}
+
+Data %>% 
+  group_by(Sub_county)%>% 
+  summarise(Number=n()) %>% 
+  arrange(Number) %>% # indicate - to arrange from big to small
+  hchart(
+    'bar', hcaes(Sub_county, Number), color='green',
+    showInLegend=F,
+    maxSize = "25%",
+    dataLabels = list(enabled = T, format = '{point.y: .0f} ')) %>%
+  hc_title(
+    text='System in Nakuru Per Sub-Counties',
+    style = list(fontWeight = "bold", fontSize = "15px"),
+    align = "center") %>% 
+  hc_tooltip(sort = TRUE, table = TRUE) %>% 
+  hc_caption(text="Points generated from coordinates") %>% 
+  hc_add_theme(hc_theme_flat())%>% 
+  #hc_add_theme(hc_theme_hcrt()) %>% 
+  hc_yAxis(title=list(text='Number of System' )) %>% 
+  hc_xAxis(title=list(text='Nakuru Sub-Counties'))
+  
+
+```
+
+Row {data-width=500}
+-----------------------------------------------------------------------
+
+### Number of Toilets Per Sub-County
+
+```{r}
+
+Data %>% 
+  group_by(Sub_county)%>% 
+  summarise(System_Doors=sum(System_Doors))%>%
+  arrange(System_Doors)%>%# indicate - to arrange from big to small
+  hchart(
+    'bar', hcaes(x=Sub_county, y= System_Doors), color='magenta',
+    showInLegend=F,
+    maxSize = "25%",
+    dataLabels = list(enabled = T, format = '{point.y: .0f} ')) %>% 
+  hc_title(
+    text='Nakuru System Doors per Sub-County ',
+    style = list(fontWeight = "bold", fontSize = "15px"),
+    align = "center") %>% 
+  hc_tooltip(sort = TRUE, table = TRUE) %>% 
+  hc_add_theme(hc_theme_flat())%>% 
+  hc_yAxis(title=list(text='Number of System Doors' )) %>% 
+  hc_xAxis(title=list(text='Nakuru Sub-Counties'))
+```
+
+
+Row {data-width=500}
+-----------------------------------------------------------------------
+
+### Number of Systems Per Year
+
+```{r}
+
+Data %>% 
+  group_by(Year)%>% 
+  summarise(Number=n()) %>% 
+  arrange(Number) %>% # indicate - to arrange from big to small
+  hchart(
+    'column', hcaes(x=Year, y=Number),  color='pink',
+    showInLegend=F,
+    maxSize = "25%",
+    dataLabels = list(enabled = T, format = '{point.y: .0f} ')) %>% 
+  hc_title(
+    text='Nakuru Number of Systems per Year',
+    style = list(fontWeight = "bold", fontSize = "15px"),
+    align = "center") %>% 
+  hc_tooltip(sort = TRUE, table = TRUE) %>% 
+  hc_add_theme(hc_theme_ffx())%>% 
+  #hc_add_theme(hc_theme_flat()) %>% 
+  hc_yAxis(title=list(text='Number of Systems' )) %>% 
+  hc_xAxis(title=list(text='Years'))
+
+
+
+```
+
+
+
+Row {data-width=500}
+-----------------------------------------------------------------------
+
+### Number of Toilets Per Year
+
+```{r}
+
+Data %>% 
+  group_by(Year)%>% 
+  summarise(System_Doors=sum(System_Doors))%>%
+ #arrange(System_Doors) %>% # indicate - to arrange from big to small
+  hchart(
+    'column', hcaes(x=Year, y=System_Doors),
+    showInLegend=F,
+    maxSize = "25%",
+    dataLabels = list(enabled = T, format = '{point.y: .0f} ')) %>% 
+  hc_title(
+    text='Nakuru Number of Systems Doors per Year',
+    style = list(fontWeight = "bold", fontSize = "15px"),
+    align = "center") %>% 
+  hc_tooltip(sort = TRUE, table = TRUE) %>% 
+  hc_add_theme(hc_theme_ffx())%>% 
+  #hc_add_theme(hc_theme_flat()) %>% 
+  hc_yAxis(title=list(text='Number of Systems' )) %>% 
+  hc_xAxis(title=list(text='Years'))
+```
+
+
+
+# {General Map}
+```{r}
+  
+```
+
+Row {data-height=400}
+-----------------------------------------------------------------------
+
+### General map of the Systems
+
+```{r}
+
+```
+
+
+
+```{r}
+leaflet() %>%
+  
+
+#addProviderTiles('Esri.WorldImegary') %>% 
+  setView(lng = 36.058758, lat= -0.427551, zoom=9) %>%
+ addScaleBar(position='bottomleft') %>% 
+  addMeasure() %>%
+  addCircles(data = Toilets2021, color = 'green', opacity = 0.4) %>% 
+  addCircles(data = Toilets2022, color = 'yellow', opacity = 0.4) %>% 
+  addCircles(data = Toilets2023, color = 'blue', opacity = 0.4) %>% 
+  addCircles(data = NCSP_Toilets, color = 'black', opacity = 0.4) %>% 
+  addCircles(data = WWX_Previous_Toilets, color = 'grey', opacity = 0.5) %>% 
+  addPolygons(data = SubCounties_shp, opacity = 0.1, fillColor = 'n') %>% 
+  addPolygons(data= Interested_SubCounties, color = 'red', weight = 3, opacity = 0.2) %>%
+  
+  addLayersControl(overlayGroups = c('SubCounties_shp','Interested_SubCounties','Toilets2021',          'Toilets2022', 'Toilets2023'),
+                   baseGroups = 'CartoDB.Voyager', options=layersControlOptions(collapsed=FALSE)) %>% 
+  #addLegend(position = 'bottomright', pal = F, values = T) %>% 
+  addProviderTiles("CartoDB.Voyager") 
+```
+
+# {Monthly Entries Trend}
+```{r}
+  
+```
+
+
+
+
+Row {data-height=400}
+-----------------------------------------------------------------------
+
+### Number of entries, Year 2021
+```{r}
+Data2021<-Data %>% 
+   dplyr::filter(Year==2021) 
+
+
+```
+
+```{r}
+Data2021 %>% 
+   group_by(Month_of_Report)%>% 
+  summarise(Number=n()) %>% 
+  arrange(Number) %>% # indicate - to arrange from big to small
+  hchart(
+    'column', hcaes(x=Month_of_Report, y=Number), color='grey',
+    showInLegend=F,
+    maxSize = "25%",
+    dataLabels = list(enabled = T, format = '{point.y: .0f} ')) %>% 
+  hc_title(
+    text='2021 number of entries',
+    style = list(fontWeight = "bold", fontSize = "15px"),
+    align = "center") %>% 
+  hc_tooltip(sort = TRUE, table = TRUE) %>% 
+  #hc_add_theme(hc_theme_darkunica())%>% 
+  hc_add_theme(hc_theme_flat()) %>% 
+  hc_yAxis(title=list(text='Number of entries' )) %>% 
+  hc_xAxis(title=list(text='Months'))
+
+
+```
+
+
+Row {data-height=400}
+-----------------------------------------------------------------------
+
+### Number of entries, Year 2022
+```{r}
+Data2022<-Data %>% 
+   dplyr::filter(Year==2022) 
+```
+
+```{r}
+Data2022 %>% 
+  group_by(Month_of_Report)%>% 
+  summarise(Number=n()) %>% 
+  arrange(Number) %>% # indicate - to arrange from big to small
+  hchart(
+    'column', hcaes(x=Month_of_Report, y=Number),color='blue',
+    showInLegend=F,
+    maxSize = "25%",
+    dataLabels = list(enabled = T, format = '{point.y: .0f} ')) %>% 
+  hc_title(
+     text='2022 number of entries',
+    style = list(fontWeight = "bold", fontSize = "15px"),
+    align = "center") %>% 
+  hc_tooltip(sort = TRUE, table = TRUE) %>% 
+  #hc_add_theme(hc_theme_darkunica())%>% 
+  hc_add_theme(hc_theme_flat()) %>% 
+  hc_yAxis(title=list(text='Number of entries' )) %>% 
+  hc_xAxis(title=list(text='Months'))
+
+
+```
+
+
+Row {data-height=400}
+-----------------------------------------------------------------------
+
+### Number of entries, Year 2023
+```{r}
+Data2023<-Data %>% 
+   dplyr::filter(Year==2023) 
+```
+
+```{r}
+Data2023 %>% 
+  group_by(Month_of_Report)%>% 
+   
+  summarise(Number=n()) %>% 
+  arrange(Number) %>% # indicate - to arrange from big to small
+  hchart(
+    'column', hcaes(x=Month_of_Report, y=Number), color='magenta',
+    showInLegend=F,
+    maxSize = "25%",
+    dataLabels = list(enabled = T, format = '{point.y: .0f} ')) %>% 
+  hc_title(
+    text='2023 number of entries',
+    style = list(fontWeight = "bold", fontSize = "15px"),
+    align = "center") %>% 
+  hc_tooltip(sort = TRUE, table = TRUE) %>% 
+  #hc_add_theme(hc_theme_darkunica())%>% 
+  hc_add_theme(hc_theme_flat()) %>% 
+  hc_yAxis(title=list(text='Number of entries' )) %>% 
+  hc_xAxis(title=list(text='Months'))
+
+```
+
+
+
+
+# {Monthly number of Doors}
+```{r}
+  
+```
+
+
+Row {data-height=400}
+-----------------------------------------------------------------------
+
+### Number of Doors, Year 2021
+
+
+```{r}
+Data2021 %>% 
+  group_by(Month_of_Report)%>% 
+  arrange(Month_of_Report)%>%
+  summarise(System_Doors=sum(System_Doors))%>%
+  #summarise(System_Users=sum(System_Users)) %>% 
+  arrange(-System_Doors)%>%# indicate - to arrange from big to small
+  hchart(
+    'column', hcaes(x=Month_of_Report, y= System_Doors),
+    showInLegend=F,
+    maxSize = "25%",
+    dataLabels = list(enabled = T, format = '{point.y: .0f} ')) %>% 
+  hc_title(
+    text='2021 Monthly Total Doors',
+    style = list(fontWeight = "bold", fontSize = "15px"),
+    align = "center") %>% 
+  hc_tooltip(sort = TRUE, table = TRUE) %>% 
+  hc_add_theme(hc_theme_bloom())%>% 
+  hc_yAxis(title=list(text='Number of System Doors' )) %>% 
+  hc_xAxis(title=list(text='Months'))
+
+```
+
+
+Row {data-height=500}
+-----------------------------------------------------------------------
+
+### Number of Doors, Year 2022
+
+```{r}
+Data2022<-Data %>% 
+   dplyr::filter(Year==2022) 
+```
+
+```{r}
+
+Data2022 %>% 
+  group_by(Month_of_Report)%>% 
+  summarise(System_Doors=sum(System_Doors))%>%
+  #summarise(System_Users=sum(System_Users)) %>% 
+  arrange(-System_Doors)%>%# indicate - to arrange from big to small
+  hchart(
+    'column', hcaes(x=Month_of_Report, y= System_Doors), color='green',
+    showInLegend=F,
+    maxSize = "25%",
+    dataLabels = list(enabled = T, format = '{point.y: .0f} ')) %>% 
+  hc_title(
+    text='2022 Monthly Total Doors',
+    style = list(fontWeight = "bold", fontSize = "15px"),
+    align = "center") %>% 
+  hc_tooltip(sort = TRUE, table = TRUE) %>% 
+  hc_add_theme(hc_theme_sandsignika())%>% 
+  hc_yAxis(title=list(text='Number of System Doors' )) %>% 
+  hc_xAxis(title=list(text='Months'))
+
+```
+
+
+
+Row {data-height=450}
+--------------------------------------------------------------------
+
+### Number of Doors Year 2023 
+```{r}
+Data2023<-Data %>% 
+   dplyr::filter(Year==2023) 
+```
+
+
+```{r}
+Data2023 %>% 
+  group_by(Month_of_Report)%>% 
+  summarise(System_Doors=sum(System_Doors))%>%
+  #summarise(System_Users=sum(System_Users)) %>% 
+  arrange(-System_Doors)%>%# indicate - to arrange from big to small
+  hchart(
+    'column', hcaes(x=Month_of_Report, y= System_Doors),
+    showInLegend=F,
+    maxSize = "25%",
+    dataLabels = list(enabled = T, format = '{point.y: .0f} ')) %>% 
+  hc_title(
+    text='2023 Monthly Total Doors',
+    style = list(fontWeight = "bold", fontSize = "15px"),
+    align = "center") %>% 
+  hc_tooltip(sort = TRUE, table = TRUE) %>% 
+  hc_add_theme(hc_theme_smpl())%>% 
+  hc_yAxis(title=list(text='Number of System Doors' )) %>% 
+  hc_xAxis(title=list(text='Months'))  
+
+
+   
+```
+
+
+
+
+# {System Types and Setting}
+```{r}
+  
+```
+
+
+Row {data-height=400}
+-----------------------------------------------------------------------
+
+### System Types 
+
+```{r}
+Data %>% 
+  group_by(System_type)%>% 
+  summarise(Number=n()) %>% 
+  arrange(Number) %>% 
+  hchart(
+    'bar', hcaes(x=System_type, y=Number),
+    showInLegend=F,
+    maxSize = "25%",
+    dataLabels = list(enabled = T, format = '{point.y: .0f} ')) %>% 
+  hc_title(
+    text='System Types',
+    style = list(fontWeight = "bold", fontSize = "15px"),
+    align = "center") %>% 
+  hc_tooltip(sort = TRUE, table = TRUE) %>% 
+  hc_add_theme(hc_theme_economist())%>% 
+  hc_yAxis(title=list(text='Percentage of Entries' )) %>% 
+  hc_xAxis(title=list(text='Months'))  
+
+
+```
+
+Row {data-height=500}
+-----------------------------------------------------------------------
+
+### System Settings
+
+```{r}
+Data %>% 
+  group_by(Setting)%>% 
+  summarise(Number=n()) %>% 
+  arrange(Number) %>% # indicate - to arrange from big to small
+  hchart(
+    'bar', hcaes(x=Setting, y=Number),
+    showInLegend=F,
+    maxSize = "25%",
+    dataLabels = list(enabled = T, format = '{point.y: .0f} ')) %>% 
+  hc_title(
+    text='Nakuru System Settings',
+    style = list(fontWeight = "bold", fontSize = "15px"),
+    align = "center") %>% 
+  hc_tooltip(sort = TRUE, table = TRUE) %>% 
+  hc_add_theme(hc_theme_ffx())%>% 
+  #hc_add_theme(hc_theme_flat()) %>% 
+  hc_yAxis(title=list(text='Percentage of the Entries' )) %>% 
+  hc_xAxis(title=list(text='Years'))
+
+
+
+```
+
+
+
+
+# {Population Served per Year}
+```{r}
+  
+```
+
+
+Row {data-height=500}
+-----------------------------------------------------------------------
+
+### Population Served for the Year 2021
+
+```{r}
+
+Data2021 %>% 
+  group_by(Month_of_Report)%>% 
+  summarise(Population=sum(System_Users))%>%
+  #summarise(System_Users=sum(System_Users)) %>% 
+  arrange(-Population)%>%# indicate - to arrange from big to small
+  hchart(
+    'bar', hcaes(x=Month_of_Report, y= Population), color='blue',
+    showInLegend=F,
+    maxSize = "25%",
+    dataLabels = list(enabled = T, format = '{point.y: .0f} ')) %>% 
+  hc_title(
+    text='2021 Population Served',
+    style = list(fontWeight = "bold", fontSize = "15px"),
+    align = "center") %>% 
+  hc_tooltip(sort = TRUE, table = TRUE) %>% 
+  hc_add_theme(hc_theme_bloom())%>% 
+  hc_yAxis(title=list(text='Number of System Doors' )) %>% 
+  hc_xAxis(title=list(text='Months'))
+
+
+```
+
+Row {data-height=500}
+-----------------------------------------------------------------------
+
+### Population Served for the Year 2022
+
+```{r}
+Data2022 %>% 
+  group_by(Month_of_Report)%>% 
+  summarise(Population=sum(System_Users))%>%
+  #summarise(System_Users=sum(System_Users)) %>% 
+  arrange(-Population)%>%# indicate - to arrange from big to small
+  hchart(
+    'bar', hcaes(x=Month_of_Report, y= Population),
+    showInLegend=F,
+    maxSize = "25%",
+    dataLabels = list(enabled = T, format = '{point.y: .0f} ')) %>% 
+  hc_title(
+    text='2022 Population Served',
+    style = list(fontWeight = "bold", fontSize = "15px"),
+    align = "center") %>% 
+  hc_tooltip(sort = TRUE, table = TRUE) %>% 
+  hc_add_theme(hc_theme_bloom())%>% 
+  hc_yAxis(title=list(text='Number of System Doors' )) %>% 
+  hc_xAxis(title=list(text='Months'))
+
+
+```
+
+Row {data-height=500}
+-----------------------------------------------------------------------
+
+### Population Served for the Year 2023
+
+```{r}
+Data2023%>% 
+  group_by(Month_of_Report)%>% 
+  summarise(Population=sum(System_Users))%>%
+  #summarise(System_Users=sum(System_Users)) %>% 
+  arrange(-Population)%>%# indicate - to arrange from big to small
+  hchart(
+    'bar', hcaes(x=Month_of_Report, y= Population), color='orange',
+    showInLegend=F,
+    maxSize = "25%",
+    dataLabels = list(enabled = T, format = '{point.y: .0f} ')) %>% 
+  hc_title(
+    text='2023 Population Served',
+    style = list(fontWeight = "bold", fontSize = "15px"),
+    align = "center") %>% 
+  hc_tooltip(sort = TRUE, table = TRUE) %>% 
+  hc_add_theme(hc_theme_bloom())%>% 
+  hc_yAxis(title=list(text='Number of System Doors' )) %>% 
+  hc_xAxis(title=list(text='Months'))
+
+
+```
+
+
+# {Nawassco Trend}
+```{r}
+  
+```
+
+```{r}
+Nawassco<-Data %>% 
+   dplyr::filter(Sub_county=='Nakuru Town East'| Sub_county=='Nakuru Town West') 
+```
+
+
+Row {data-height=500}
+-----------------------------------------------------------------------
+
+### Nawassco Number of Toilets (Doors)
+
+```{r}
+
+Nawassco %>% 
+  group_by(Year)%>% 
+  summarise(System_Doors=sum(System_Doors))%>%
+ arrange(System_Doors) %>% # indicate - to arrange from big to small
+  hchart(
+    'column', hcaes(x=Year, y=System_Doors), color='blue',
+    showInLegend=F,
+    maxSize = "25%",
+    dataLabels = list(enabled = T, format = '{point.y: .0f} ')) %>% 
+  hc_title(
+    text='Nawassco Number of Systems Doors per Year',
+    style = list(fontWeight = "bold", fontSize = "15px"),
+    align = "center") %>% 
+  hc_tooltip(sort = TRUE, table = TRUE) %>% 
+  hc_add_theme(hc_theme_ffx())%>% 
+  #hc_add_theme(hc_theme_flat()) %>% 
+  hc_yAxis(title=list(text='Number of Doors' )) %>% 
+  hc_xAxis(title=list(text='Years'))
+
+```
+
+Row {data-height=500}
+-----------------------------------------------------------------------
+
+### Nawassco Population Served
+
+```{r}
+Nawassco%>% 
+  group_by(Year)%>% 
+  summarise(population=sum(System_Users))%>%
+ arrange(-population) %>% # indicate - to arrange from big to small
+  hchart(
+    'column', hcaes(x=Year, y=population),
+    showInLegend=F,
+    maxSize = "25%",
+    dataLabels = list(enabled = T, format = '{point.y: .0f} ')) %>% 
+  hc_title(
+    text='Nawassco Number of Population Served per Year',
+    style = list(fontWeight = "bold", fontSize = "15px"),
+    align = "center") %>% 
+  hc_tooltip(sort = TRUE, table = TRUE) %>% 
+  hc_add_theme(hc_theme_ffx())%>% 
+  #hc_add_theme(hc_theme_flat()) %>% 
+  hc_yAxis(title=list(text='Number of Doors' )) %>% 
+  hc_xAxis(title=list(text='Years'))
+
+
+```
+
+
+Row {data-height=500}
+-----------------------------------------------------------------------
+
+### Nawassco System Class 2023
+
+```{r}
+Nawassco %>% 
+  group_by(System_Class)%>% 
+   filter(Year=='2023') %>% 
+  summarise(Number=n()) %>% 
+  arrange(Number) %>% # indicate - to arrange from big to small
+  hchart(
+    'column', hcaes(x=System_Class, y=Number), color='violet',
+    showInLegend=F,
+    maxSize = "25%",
+    dataLabels = list(enabled = T, format = '{point.y: .0f} ')) %>% 
+  hc_title(
+    text='Nawasco System Class 2023',
+    style = list(fontWeight = "bold", fontSize = "15px"),
+    align = "center") %>% 
+  hc_tooltip(sort = TRUE, table = TRUE) %>% 
+  hc_add_theme(hc_theme_ffx())%>% 
+  #hc_add_theme(hc_theme_flat()) %>% 
+  hc_yAxis(title=list(text='Number' )) %>% 
+  hc_xAxis(title=list(text='System Class'))
+
+
+```
+
+Row {data-height=500}
+-----------------------------------------------------------------------
+
+### Nawassco Data
+
+```{r}
+ datatable(Nawasscoshp,
+          caption = "Nawassco Constructed and Improved Toilets Under Partnership                      with FnishINK",
+          rownames = T,
+          filter = "top",
+          class = "hover cell-border stripe", #for making grid cells
+          #editable = "cell", # for editing cells
+          extensions="Buttons",
+          options = list(pageLength = 80,dom="Bfrtip", buttons=c( 'copy','csv', '' ))) 
+
+```
+
+# {Naruwasco Trend}
+```{r}
+  
+```
+
+```{r}
+Naruwasco<-Data %>% 
+   dplyr::filter(Sub_county=='Molo'| Sub_county=='Rongai') 
+```
+
+
+Row {data-height=500}
+-----------------------------------------------------------------------
+
+### Naruwasco Number of Toilets (Doors)
+
+```{r}
+
+Naruwasco%>% 
+  group_by(Year)%>% 
+  summarise(System_Doors=sum(System_Doors))%>%
+ #arrange(-System_Doors) %>% # indicate - to arrange from big to small
+  hchart(
+    'column', hcaes(x=Year, y=System_Doors), color='blue',
+    showInLegend=F,
+    maxSize = "25%",
+    dataLabels = list(enabled = T, format = '{point.y: .0f} ')) %>% 
+  hc_title(
+    text='Naruwasco Number of Systems Doors per Year',
+    style = list(fontWeight = "bold", fontSize = "15px"),
+    align = "center") %>% 
+  hc_tooltip(sort = TRUE, table = TRUE) %>% 
+  hc_add_theme(hc_theme_ffx())%>% 
+  #hc_add_theme(hc_theme_flat()) %>% 
+  hc_yAxis(title=list(text='Number of Doors' )) %>% 
+  hc_xAxis(title=list(text='Years'))
+
+
+
+```
+
+Row {data-height=500}
+-----------------------------------------------------------------------
+
+### Naruwasco Population Served
+
+```{r}
+Naruwasco%>% 
+  group_by(Year)%>% 
+  summarise(population=sum(System_Users))%>%
+ arrange(population) %>% # indicate - to arrange from big to small
+  hchart(
+    'column', hcaes(x=Year, y=population),
+    showInLegend=F,
+    maxSize = "25%",
+    dataLabels = list(enabled = T, format = '{point.y: .0f} ')) %>% 
+  hc_title(
+    text='Naruwasco Number of Population Served per Year',
+    style = list(fontWeight = "bold", fontSize = "15px"),
+    align = "center") %>% 
+  hc_tooltip(sort = TRUE, table = TRUE) %>% 
+  hc_add_theme(hc_theme_ffx())%>% 
+  #hc_add_theme(hc_theme_flat()) %>% 
+  hc_yAxis(title=list(text='Number of Doors' )) %>% 
+  hc_xAxis(title=list(text='Years'))
+
+
+```
+
+
+Row {data-height=500}
+-----------------------------------------------------------------------
+
+### Naruwasco System Class 2023
+
+```{r}
+Naruwasco %>% 
+  group_by(System_Class)%>% 
+   filter(Year=='2023') %>% 
+  summarise(Number=n()) %>% 
+  arrange(Number) %>% # indicate - to arrange from big to small
+  hchart(
+    'column', hcaes(x=System_Class, y=Number), color='violet',
+    showInLegend=F,
+    maxSize = "25%",
+    dataLabels = list(enabled = T, format = '{point.y: .0f} ')) %>% 
+  hc_title(
+    text='Naruwasco System Class 2023',
+    style = list(fontWeight = "bold", fontSize = "15px"),
+    align = "center") %>% 
+  hc_tooltip(sort = TRUE, table = TRUE) %>% 
+  hc_add_theme(hc_theme_ffx())%>% 
+  hc_yAxis(title=list(text='Number' )) %>% 
+  hc_xAxis(title=list(text='System Class'))
+
+
+```
+
+
+Row {data-height=500}
+-----------------------------------------------------------------------
+
+### Naruwasco Data
+
+```{r}
+ datatable(Naruwasco,
+          caption = "Naruwasco Constructed and Improved Toilets Under Partnership              with FnishINK",
+          rownames = T,
+          filter = "top",
+          class = "hover cell-border stripe", #for making grid cells
+          #editable = "cell", # for editing cells
+          extensions="Buttons",
+          options = list(pageLength = 80,dom="Bfrtip", buttons=c( 'copy','csv', '' )))
+
+
+```
+
+
+# {Naivawasco Trend}
+```{r}
+  
+```
+
+```{r}
+Naivawasco<-Data %>% 
+   dplyr::filter(Sub_county== 'Naivasha') 
+```
+
+
+Row {data-height=500}
+-----------------------------------------------------------------------
+
+### Naivawasco Number of Toilets (Doors)
+
+```{r}
+Naivawasco%>% 
+  group_by(Year)%>% 
+  summarise(System_Doors=sum(System_Doors))%>%
+ arrange(System_Doors) %>% # indicate - to arrange from big to small
+  hchart(
+    'column', hcaes(x=Year, y=System_Doors), color='blue',
+    showInLegend=F,
+    maxSize = "25%",
+    dataLabels = list(enabled = T, format = '{point.y: .0f} ')) %>% 
+  hc_title(
+    text='Naivawasco Number of Systems Doors per Year',
+    style = list(fontWeight = "bold", fontSize = "15px"),
+    align = "center") %>% 
+  hc_tooltip(sort = TRUE, table = TRUE) %>% 
+  hc_add_theme(hc_theme_ffx())%>% 
+  #hc_add_theme(hc_theme_flat()) %>% 
+  hc_yAxis(title=list(text='Number of Doors' )) %>% 
+  hc_xAxis(title=list(text='Years'))
+
+
+```
+
+Row {data-height=500}
+-----------------------------------------------------------------------
+
+### Naivawasco Population Served
+```{r}
+Naivawasco%>% 
+  group_by(Year)%>% 
+  summarise(population=sum(System_Users))%>%
+ arrange(population) %>% # indicate - to arrange from big to small
+  hchart(
+    'column', hcaes(x=Year, y=population), 
+    showInLegend=F,
+    maxSize = "25%",
+    dataLabels = list(enabled = T, format = '{point.y: .0f} ')) %>% 
+  hc_title(
+    text='Naivawasco Number of Population Served per Year',
+    style = list(fontWeight = "bold", fontSize = "15px"),
+    align = "center") %>% 
+  hc_tooltip(sort = TRUE, table = TRUE) %>% 
+  hc_add_theme(hc_theme_ffx())%>% 
+  #hc_add_theme(hc_theme_flat()) %>% 
+  hc_yAxis(title=list(text='Number of Doors' )) %>% 
+  hc_xAxis(title=list(text='Years'))
+
+
+```
+
+
+Row {data-height=500}
+-----------------------------------------------------------------------
+
+### Naivawasco System Class 2023
+
+```{r}
+
+
+
+```
+
+
+Row {data-height=500}
+-----------------------------------------------------------------------
+
+### Naivawasco Data
+
+```{r}
+ datatable(Naivawasco,
+          caption = "Naivawasco Constructed and Improved Toilets Under Partnership              with FnishINK",
+          rownames = T,
+          filter = "top",
+          class = "hover cell-border stripe", #for making grid cells
+          #editable = "cell", # for editing cells
+          extensions="Buttons",
+          options = list(pageLength = 80,dom="Bfrtip", buttons=c( 'copy','csv', '' )))
+
+
+```
+
+
+
+# {Data}
+```{r}
+
+```
+
+
+
+
+```{r}
+
+ datatable(Datashp,
+          caption = "Nakuru Constructed and Improved Toilets Under Partnership              with FnishINK",
+          rownames = T,
+          filter = "top",
+          class = "hover cell-border stripe", #for making grid cells
+          #editable = "cell", # for editing cells
+          extensions="Buttons",
+          options = list(pageLength = 80,dom="Bfrtip", buttons=c( 'copy','csv', '' )))
+
+```
+
+```{r}
+
+```
+
+
+
+
